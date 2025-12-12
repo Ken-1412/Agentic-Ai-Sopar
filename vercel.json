@@ -1,54 +1,39 @@
 {
   "version": 2,
-  "buildCommand": "cd frontend && npm run build",
-  "outputDirectory": "frontend/dist",
-  "devCommand": "npm run dev",
-  "installCommand": "npm install",
-  "env": {
-    "KESTRA_URL": {
-      "required": false,
-      "value": "http://localhost:8080"
+  "builds": [
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
     },
-    "OUMI_MODEL": {
-      "required": false,
-      "value": "llama-2-7b"
-    },
-    "BACKEND_URL": {
-      "required": false
+    {
+      "src": "backend/server.js",
+      "use": "@vercel/node"
     }
-  },
-  "functions": {
-    "backend/api/**": {
-      "runtime": "nodejs18.x",
-      "memory": 3008,
-      "maxDuration": 60
-    }
-  },
+  ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "backend/api/$1"
+      "dest": "/backend/server.js"
     },
     {
       "src": "/(.*)",
-      "dest": "frontend/dist/$1"
+      "dest": "/frontend/$1"
     }
   ],
-  "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "/api/:path*"
+  "env": {
+    "MONGODB_URI": "@mongodb_uri",
+    "JWT_SECRET": "@jwt_secret",
+    "HF_API_KEY": "@hf_api_key",
+    "LLM_DEPLOYMENT_MODE": "online",
+    "REDIS_ENABLED": "false",
+    "NODE_ENV": "production"
+  },
+  "build": {
+    "env": {
+      "VITE_API_URL": "https://your-app.vercel.app/api"
     }
-  ]
+  }
 }
-
-
-
-
-
-
-
-
-
-
-
