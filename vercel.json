@@ -9,31 +9,42 @@
       }
     },
     {
-      "src": "backend/server.js",
+      "src": "backend/api/**/*.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "/backend/server.js"
+      "dest": "/backend/api/$1"
+    },
+    {
+      "handle": "filesystem"
     },
     {
       "src": "/(.*)",
-      "dest": "/frontend/$1"
+      "dest": "/frontend/dist/$1"
     }
   ],
   "env": {
+    "NODE_ENV": "production",
     "MONGODB_URI": "@mongodb_uri",
     "JWT_SECRET": "@jwt_secret",
     "HF_API_KEY": "@hf_api_key",
     "LLM_DEPLOYMENT_MODE": "online",
+    "HF_MODEL": "meta-llama/Llama-3.2-3B-Instruct",
     "REDIS_ENABLED": "false",
-    "NODE_ENV": "production"
+    "CORS_ORIGIN": "https://your-app.vercel.app"
   },
   "build": {
     "env": {
-      "VITE_API_URL": "https://your-app.vercel.app/api"
+      "VITE_API_URL": "/api"
+    }
+  },
+  "functions": {
+    "backend/api/**/*.js": {
+      "memory": 1024,
+      "maxDuration": 10
     }
   }
 }
