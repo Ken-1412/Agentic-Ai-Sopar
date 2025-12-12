@@ -1,0 +1,144 @@
+# CodeRabbit Configuration for SAPOR
+# AI-powered code review settings
+
+# Language settings
+language: en-US
+
+# Review settings
+reviews:
+  # Request changes for high severity issues
+  request_changes_workflow: true
+  
+  # Enable high-level summary
+  high_level_summary: true
+  
+  # Auto-review
+  auto_review:
+    enabled: true
+    
+    # Review criteria
+    drafts: false
+    base_branches:
+      - main
+      - develop
+  
+  # Review scope
+  review_scope:
+    # Exclude files
+    exclude:
+      - "**/*.min.js"
+      - "**/*.bundle.js"
+      - "**/node_modules/**"
+      - "**/dist/**"
+      - "**/build/**"
+      - "**/*.lock"
+      - "package-lock.json"
+      - "yarn.lock"
+    
+    # Include files
+    include:
+      - "**/*.js"
+      - "**/*.jsx"
+      - "**/*.ts"
+      - "**/*.tsx"
+      - "**/*.py"
+      - "**/*.md"
+  
+  # Review checks
+  checks:
+    # Code quality
+    code_quality:
+      enabled: true
+      severity: error
+    
+    # Security
+    security:
+      enabled: true
+      severity: error
+    
+    # Performance
+    performance:
+      enabled: true
+      severity: warning
+    
+    # Best practices
+    best_practices:
+      enabled: true
+      severity: warning
+    
+    # Documentation
+    documentation:
+      enabled: true
+      severity: info
+    
+    # Testing
+    testing:
+      enabled: true
+      severity: warning
+
+# Chat settings
+chat:
+  # Enable interactive chat
+  enabled: true
+  
+  # Auto-reply to questions
+  auto_reply: true
+
+# Knowledge base
+knowledge_base:
+  # Project-specific context
+  learnings_scope: global
+  
+  # Custom rules
+  custom_rules:
+    - name: "AI Service Patterns"
+      description: "Ensure LLM service calls use caching and fallbacks"
+      pattern: "services/llm/**/*.js"
+      
+    - name: "Recipe Analysis Standards"
+      description: "Recipe analyzers must include severity scoring"
+      pattern: "services/analysis/**/*.js"
+      
+    - name: "React Component Standards"
+      description: "Components must use hooks and be functional"
+      pattern: "frontend/src/components/**/*.jsx"
+      
+    - name: "API Documentation"
+      description: "All API routes must have JSDoc comments"
+      pattern: "backend/api/**/*.js"
+
+# Tools and integrations
+tools:
+  # ESLint
+  eslint:
+    enabled: true
+    config: .eslintrc.js
+  
+  # Prettier
+  prettier:
+    enabled: true
+    config: .prettierrc
+  
+  # Testing
+  jest:
+    enabled: true
+    config: jest.config.js
+
+# Early access features
+early_access: true
+
+# Comments
+comments:
+  # Collapse resolved comments
+  collapse_resolved: true
+  
+  # Group similar issues
+  group_similar: true
+  
+  # Tone
+  tone_instructions: |
+    - Be constructive and helpful
+    - Focus on AI/ML best practices
+    - Highlight security concerns
+    - Suggest performance improvements
+    - Reference SAPOR's architecture patterns
