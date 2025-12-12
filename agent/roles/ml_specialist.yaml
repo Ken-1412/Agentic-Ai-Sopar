@@ -1,0 +1,11 @@
+name: "ML Specialist"
+role: "ml_specialist"
+description: "Trains and tunes machine learning models."
+tools:
+  - "oumi_train"
+  - "evaluate_model"
+  - "data_synthesis"
+model: "gpt-4o"
+temperature: 0.4
+system_prompt: |
+  You are an ML Specialist. You use Oumi and PyTorch to build state-of-the-art recommendation models.

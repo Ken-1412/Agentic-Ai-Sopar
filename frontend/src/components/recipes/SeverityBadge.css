@@ -1,0 +1,83 @@
+/* Severity Badge Styles */
+
+.severity-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 24px;
+    font-weight: 600;
+    font-size: 14px;
+    background: var(--severity-color);
+    color: white;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+}
+
+.severity-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.severity-badge.large {
+    padding: 12px 24px;
+    font-size: 18px;
+    gap: 12px;
+}
+
+.severity-emoji {
+    font-size: 1.2em;
+}
+
+.severity-badge.large .severity-emoji {
+    font-size: 1.5em;
+}
+
+.severity-label {
+    text-transform: capitalize;
+}
+
+.severity-description {
+    opacity: 0.9;
+    font-weight: 400;
+    font-size: 0.9em;
+    margin-left: 8px;
+}
+
+/* Severity-specific styles */
+.severity-clean {
+    --severity-color: #2ecc40;
+}
+
+.severity-spooky {
+    --severity-color: #ffdc00;
+    color: #333;
+}
+
+.severity-haunted {
+    --severity-color: #ff851b;
+}
+
+.severity-cursed {
+    --severity-color: #ff4136;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        box-shadow: 0 4px 15px rgba(255, 65, 54, 0.4);
+    }
+
+    50% {
+        box-shadow: 0 4px 25px rgba(255, 65, 54, 0.8);
+    }
+}
+
+/* Small badge variant */
+.severity-badge.small {
+    padding: 4px 12px;
+    font-size: 12px;
+    gap: 6px;
+}

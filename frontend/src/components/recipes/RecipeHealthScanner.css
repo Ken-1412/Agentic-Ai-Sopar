@@ -1,0 +1,446 @@
+/* Recipe Health Scanner Styles */
+
+.recipe-health-scanner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    overflow-y: auto;
+    padding: 20px;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.scanner-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto 30px;
+    padding: 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    color: white;
+}
+
+.scanner-header h2 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+.loading-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: white;
+}
+
+.spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid rgba(255, 255, 255, 0.2);
+    border-top: 4px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.scanner-tabs {
+    display: flex;
+    gap: 10px;
+    max-width: 1200px;
+    margin: 0 auto 20px;
+}
+
+.scanner-tabs button {
+    flex: 1;
+    padding: 15px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.scanner-tabs button:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.scanner-tabs button.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-color: transparent;
+}
+
+.scanner-tabs button:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.scanner-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 30px;
+}
+
+/* Analysis View */
+.recipe-overview {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.recipe-overview h3 {
+    color: white;
+    font-size: 32px;
+    margin-bottom: 20px;
+}
+
+.health-score {
+    margin-top: 30px;
+}
+
+.score-circle {
+    position: relative;
+    width: 150px;
+    height: 150px;
+    margin: 0 auto 15px;
+}
+
+.score-circle svg {
+    transform: rotate(-90deg);
+}
+
+.score-value {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 36px;
+    font-weight: 700;
+    color: white;
+}
+
+.health-score p {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.summary-card {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 25px;
+    margin-bottom: 30px;
+}
+
+.summary-card h4 {
+    color: white;
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
+.summary-card p {
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.summary-card .action {
+    color: #ffdc00;
+}
+
+/* Issues List */
+.issues-list {
+    margin-bottom: 30px;
+}
+
+.issues-list h4 {
+    color: white;
+    font-size: 22px;
+    margin-bottom: 20px;
+}
+
+.issue-card {
+    background: rgba(255, 255, 255, 0.05);
+    border-left: 4px solid;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+    transition: all 0.3s ease;
+}
+
+.issue-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateX(5px);
+}
+
+.issue-card.severity-cursed {
+    border-left-color: #ff4136;
+    background: rgba(255, 65, 54, 0.1);
+}
+
+.issue-card.severity-haunted {
+    border-left-color: #ff851b;
+    background: rgba(255, 133, 27, 0.1);
+}
+
+.issue-card.severity-spooky {
+    border-left-color: #ffdc00;
+    background: rgba(255, 220, 0, 0.1);
+}
+
+.issue-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.issue-type {
+    color: white;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.issue-message {
+    color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 10px;
+}
+
+.issue-recommendation {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+}
+
+/* Alternative View */
+.comparison-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    margin-bottom: 40px;
+    padding: 30px;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+    border-radius: 16px;
+}
+
+.comparison-item {
+    text-align: center;
+    flex: 1;
+}
+
+.comparison-item h4 {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.comparison-item .recipe-name {
+    color: white;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.comparison-item .score {
+    font-size: 32px;
+    font-weight: 700;
+    color: white;
+    margin-top: 15px;
+}
+
+.comparison-item.improved .score {
+    color: #2ecc40;
+}
+
+.improvement {
+    color: #2ecc40;
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 5px;
+}
+
+.arrow {
+    font-size: 36px;
+    color: rgba(255, 255, 255, 0.3);
+    margin: 0 20px;
+}
+
+/* Substitutions */
+.substitutions {
+    margin-bottom: 30px;
+}
+
+.substitutions h4 {
+    color: white;
+    font-size: 22px;
+    margin-bottom: 20px;
+}
+
+.substitution-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+}
+
+.substitution-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.substitution-row .original {
+    flex: 1;
+    color: #ff4136;
+    font-weight: 600;
+    text-decoration: line-through;
+}
+
+.substitution-row .arrow {
+    font-size: 20px;
+    margin: 0;
+}
+
+.substitution-row .alternative {
+    flex: 1;
+    color: #2ecc40;
+    font-weight: 600;
+}
+
+.substitution-card .benefit {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+}
+
+/* Buttons */
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border: none;
+    color: white;
+    padding: 15px 30px;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.btn-large {
+    padding: 20px 40px;
+    font-size: 18px;
+}
+
+/* AI Analysis Card */
+.ai-analysis-card {
+    background: linear-gradient(135deg, rgba(46, 204, 64, 0.1) 0%, rgba(0, 181, 204, 0.1) 100%);
+    border: 2px solid rgba(46, 204, 64, 0.2);
+    border-radius: 16px;
+    padding: 25px;
+    margin-top: 30px;
+}
+
+.ai-analysis-card h4 {
+    color: #2ecc40;
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
+.ai-content {
+    color: rgba(255, 255, 255, 0.9);
+    line-height: 1.6;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.ai-content pre {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    border-radius: 8px;
+    overflow-x: auto;
+}
+
+.ai-source {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 12px;
+    margin-top: 10px;
+    text-align: right;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .recipe-health-scanner {
+        padding: 10px;
+    }
+
+    .scanner-header h2 {
+        font-size: 20px;
+    }
+
+    .scanner-tabs {
+        flex-direction: column;
+    }
+
+    .comparison-header {
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    .arrow {
+        transform: rotate(90deg);
+    }
+}

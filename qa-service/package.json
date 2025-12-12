@@ -1,0 +1,36 @@
+{
+    "name": "qa-service",
+    "version": "1.0.0",
+    "description": "Q&A microservice for SAPOR using Elasticsearch and OpenAI",
+    "main": "src/server.js",
+    "scripts": {
+        "start": "node src/server.js",
+        "dev": "nodemon src/server.js",
+        "index-data": "node src/scripts/index-meals.js",
+        "health": "node health-check.js"
+    },
+    "keywords": [
+        "qa",
+        "elasticsearch",
+        "openai",
+        "rag"
+    ],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@elastic/elasticsearch": "^8.11.0",
+        "axios": "^1.13.2",
+        "body-parser": "^2.2.1",
+        "cors": "^2.8.5",
+        "dotenv": "^17.2.3",
+        "express": "^5.2.1",
+        "express-rate-limit": "^8.2.1",
+        "helmet": "^8.1.0",
+        "mongoose": "^9.0.1",
+        "morgan": "^1.10.1",
+        "openai": "^4.20.0"
+    },
+    "devDependencies": {
+        "nodemon": "^3.1.11"
+    }
+}

@@ -1,0 +1,55 @@
+id: dev_cycle
+namespace: sapor
+description: |
+  Agentic dev loop for SAPOR: lint, test, smoke-check API, then signal deploy.
+
+tasks:
+  - id: frontend_lint_test
+    type: io.kestra.plugin.scripts.shell.Script
+    description: Lint and test the frontend
+    env:
+      CI: "true"
+    script: |
+      set -e
+      cd frontend
+      echo "📦 Installing frontend deps (cached in CI if configured)"
+      npm install --prefer-offline --no-fund --no-audit
+      echo "🔍 Linting frontend"
+      npm run lint
+      # Optional: add tests when available
+      echo "✅ Frontend lint completed"
+
+  - id: backend_lint_test
+    type: io.kestra.plugin.scripts.shell.Script
+    description: Lint (basic) and run smoke script for backend
+    script: |
+      set -e
+      cd backend
+      echo "📦 Installing backend deps (cached in CI if configured)"
+      npm install --prefer-offline --no-fund --no-audit
+      echo "🧪 Running backend smoke test (node smoke-test.js)"
+      node smoke-test.js
+      echo "✅ Backend smoke test completed"
+
+  - id: notify_ready_for_deploy
+    type: io.kestra.plugin.scripts.shell.Script
+    description: Marker task to signal deployment can proceed
+    script: |
+      echo "✅ Dev cycle passed. Ready to deploy (trigger Vercel or CI next step)."
+
+triggers:
+  - id: on_push_main
+    type: io.kestra.plugin.core.trigger.Webhook
+    description: Trigger from CI webhook on push/PR merge (optional)
+    conditions:
+      method: POST
+      path: /hooks/dev-cycle
+      bodyTypes:
+        - application/json
+
+
+
+
+
+
+

@@ -1,0 +1,66 @@
+id: meal_data_ingestion
+namespace: sapor
+description: Ingest meal data from MongoDB to Kestra
+
+tasks:
+  - id: fetch_meals
+    type: io.kestra.plugin.scripts.python.Script
+    script: |
+      from pymongo import MongoClient
+      import json
+      
+      # Connect to MongoDB
+      client = MongoClient('mongodb+srv://your-connection-string')
+      db = client['meal_db']
+      meals_collection = db['meals']
+      
+      # Fetch all meals
+      meals = list(meals_collection.find({}, {'_id': False}))
+      print(json.dumps(meals))
+    outputs:
+      - name: meals
+        type: STRING
+
+  - id: process_meals
+    type: io.kestra.plugin.scripts.python.Script
+    depends: fetch_meals
+    script: |
+      import json
+      meals_data = json.loads('''{{ taskRun.outputs.meals }}''')
+      
+      # Normalize data
+      processed_meals = []
+      for meal in meals_data:
+        processed_meals.append({
+          'name': meal.get('name'),
+          'cuisine': meal.get('cuisine'),
+          'calories': meal.get('calories'),
+          'protein': meal.get('protein'),
+          'vegetarian': meal.get('is_vegetarian', False)
+        })
+      
+      print(json.dumps(processed_meals))
+    outputs:
+      - name: processed
+        type: STRING
+
+  - id: store_results
+    type: io.kestra.plugin.scripts.python.Script
+    depends: process_meals
+    script: |
+      import json
+      from pymongo import MongoClient
+      
+      processed = json.loads('''{{ taskRun.outputs.processed }}''')
+      
+      client = MongoClient('mongodb+srv://your-connection-string')
+      db = client['meal_db']
+      processed_collection = db['processed_meals']
+      
+      processed_collection.insert_many(processed)
+      print(f"Stored {len(processed)} meals")
+
+triggers:
+  - id: daily_schedule
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 2 * * *"  # Run daily at 2 AM

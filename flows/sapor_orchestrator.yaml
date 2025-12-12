@@ -1,0 +1,83 @@
+id: sapor_orchestrator
+namespace: sapor
+description: Orchestrate SAPOR Agents (Planner, Trainer, Feedback)
+
+inputs:
+  - id: action
+    type: STRING
+    description: "Action to perform: 'plan_weekly', 'check_training', 'process_feedback'"
+    defaults: "plan_weekly"
+  - id: payload
+    type: STRING
+    description: "JSON payload for the action"
+    defaults: "{}"
+
+tasks:
+  - id: switch_action
+    type: io.kestra.plugin.core.flow.Switch
+    value: "{{ inputs.action }}"
+    cases:
+      plan_weekly:
+        - id: run_planner
+          type: io.kestra.plugin.scripts.python.Script
+          script: |
+            import sys
+            import json
+            # Add repo root to path so we can import agents
+            sys.path.append('.')
+            from agent.planner_agent import workflow
+            from langchain_core.messages import HumanMessage
+            
+            payload = json.loads('''{{ inputs.payload }}''')
+            user_msg = payload.get('message', "Plan a healthy week for me.")
+            
+            # Run the LangGraph app
+            app = workflow.compile()
+            inputs = {"messages": [HumanMessage(content=user_msg)]}
+            
+            final_output = None
+            for output in app.stream(inputs):
+                for key, value in output.items():
+                    if key == "generate_plan":
+                        final_output = value.get("final_plan")
+            
+            print(json.dumps(final_output))
+      
+      check_training:
+        - id: run_trainer
+          type: io.kestra.plugin.scripts.python.Script
+          script: |
+            import sys
+            sys.path.append('.')
+            from agent.trainer_agent import TrainerAgent
+            
+            agent = TrainerAgent()
+            result = agent.run_loop()
+            print(f"Trainer result: {result}")
+            
+      process_feedback:
+        - id: run_feedback
+          type: io.kestra.plugin.scripts.python.Script
+          script: |
+            import sys
+            import json
+            sys.path.append('.')
+            from agent.feedback_agent import FeedbackAgent
+            
+            payload = json.loads('''{{ inputs.payload }}''')
+            agent = FeedbackAgent()
+            result = agent.process_feedback(payload)
+            print(f"Feedback processed: {result}")
+
+triggers:
+  - id: weekly_schedule
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 9 * * 1" # Every Monday at 9am
+    inputs:
+      action: "plan_weekly"
+      
+  - id: hourly_training_check
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 * * * *" # Every hour
+    inputs:
+      action: "check_training"

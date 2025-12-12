@@ -1,0 +1,86 @@
+id: ml_recommendations
+namespace: sapor
+description: Generate meal recommendations using ML
+
+tasks:
+  - id: load_model
+    type: io.kestra.plugin.scripts.python.Script
+    script: |
+      import joblib
+      import sys
+      
+      # Load your pre-trained model
+      model = joblib.load('/app/models/recommendation_model.pkl')
+      print("Model loaded successfully")
+    outputs:
+      - name: model_status
+        type: STRING
+
+  - id: fetch_user_preferences
+    type: io.kestra.plugin.scripts.python.Script
+    script: |
+      from pymongo import MongoClient
+      import json
+      
+      client = MongoClient('mongodb+srv://your-connection-string')
+      db = client['meal_db']
+      users = list(db['users'].find({}, {'_id': False}))
+      
+      print(json.dumps(users))
+    outputs:
+      - name: users
+        type: STRING
+
+  - id: generate_recommendations
+    type: io.kestra.plugin.scripts.python.Script
+    depends: [load_model, fetch_user_preferences]
+    script: |
+      import json
+      import joblib
+      import numpy as np
+      
+      users_data = json.loads('''{{ taskRun.outputs.users }}''')
+      model = joblib.load('/app/models/recommendation_model.pkl')
+      
+      recommendations = []
+      for user in users_data:
+        # Create feature vector from user preferences
+        features = np.array([
+          user.get('budget', 10),
+          user.get('cuisine_preference', 0),
+          user.get('diet_type', 0),
+          user.get('calorie_target', 2000)
+        ]).reshape(1, -1)
+        
+        # Predict top meals
+        top_meal_ids = model.predict(features)[0]
+        recommendations.append({
+          'user_id': user['id'],
+          'recommended_meals': top_meal_ids.tolist()
+        })
+      
+      print(json.dumps(recommendations))
+    outputs:
+      - name: recommendations
+        type: STRING
+
+  - id: store_recommendations
+    type: io.kestra.plugin.scripts.python.Script
+    depends: generate_recommendations
+    script: |
+      import json
+      from pymongo import MongoClient
+      
+      recommendations = json.loads('''{{ taskRun.outputs.recommendations }}''')
+      
+      client = MongoClient('mongodb+srv://your-connection-string')
+      db = client['meal_db']
+      rec_collection = db['recommendations']
+      
+      rec_collection.insert_many(recommendations)
+      print(f"Stored recommendations for {len(recommendations)} users")
+
+triggers:
+  - id: nightly_trigger
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 3 * * *"  # Run daily at 3 AM

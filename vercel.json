@@ -1,0 +1,53 @@
+{
+  "version": 2,
+  "buildCommand": "cd frontend && npm run build",
+  "outputDirectory": "frontend/dist",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "env": {
+    "KESTRA_URL": {
+      "required": false,
+      "value": "http://localhost:8080"
+    },
+    "OUMI_MODEL": {
+      "required": false,
+      "value": "llama-2-7b"
+    },
+    "BACKEND_URL": {
+      "required": false
+    }
+  },
+  "functions": {
+    "backend/api/**": {
+      "runtime": "nodejs18.x",
+      "memory": 3008,
+      "maxDuration": 60
+    }
+  },
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "backend/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "frontend/dist/$1"
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
+    }
+  ]
+}
+
+
+
+
+
+
+
+
+
+

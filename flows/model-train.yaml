@@ -1,0 +1,47 @@
+id: model_train
+namespace: sapor
+description: Train/evaluate recommendation model via Oumi stub, loop on low accuracy
+
+inputs:
+  - name: target_accuracy
+    type: DOUBLE
+    defaults: 0.72
+
+tasks:
+  - id: run_training
+    type: io.kestra.plugin.scripts.shell.Script
+    description: Run Oumi training stub (replace with real training command)
+    script: |
+      set -e
+      echo "🏋️  Running Oumi training stub"
+      python ml_models/oumi_train_stub.py --epochs 2 --min-accuracy {{inputs.target_accuracy}}
+
+  - id: evaluate
+    type: io.kestra.plugin.scripts.shell.Script
+    depends: run_training
+    description: Parse metrics emitted by training stub
+    script: |
+      set -e
+      echo "📊 Parsing metrics.json"
+      python - <<'PY'
+import json, sys
+from pathlib import Path
+metrics_path = Path("ml_models/metrics.json")
+if not metrics_path.exists():
+    sys.exit("metrics.json missing")
+metrics = json.loads(metrics_path.read_text())
+print(json.dumps(metrics))
+if metrics.get("accuracy", 0) < {{inputs.target_accuracy}}:
+    sys.exit(f"Accuracy {metrics.get('accuracy')} below target")
+PY
+
+triggers:
+  - id: manual
+    type: io.kestra.plugin.core.trigger.Manual
+
+
+
+
+
+
+

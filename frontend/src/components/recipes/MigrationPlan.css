@@ -1,0 +1,228 @@
+/* Migration Plan Styles */
+
+.migration-plan {
+    color: white;
+}
+
+.plan-header {
+    margin-bottom: 30px;
+}
+
+.plan-header h3 {
+    font-size: 28px;
+    margin-bottom: 15px;
+    color: white;
+}
+
+.plan-meta {
+    display: flex;
+    gap: 30px;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.plan-meta strong {
+    color: white;
+    text-transform: capitalize;
+}
+
+/* Phases */
+.phases-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.phase-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 25px;
+    transition: all 0.3s ease;
+}
+
+.phase-card:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.phase-card.completed {
+    background: rgba(46, 204, 64, 0.1);
+    border-color: rgba(46, 204, 64, 0.3);
+}
+
+.phase-header {
+    margin-bottom: 20px;
+}
+
+.phase-title-row {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+}
+
+.phase-number {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.phase-title-row h4 {
+    flex: 1;
+    color: white;
+    font-size: 20px;
+    margin: 0;
+}
+
+.priority-badge {
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: white;
+}
+
+.phase-description {
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.6;
+    margin-bottom: 10px;
+}
+
+.phase-time {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 14px;
+}
+
+/* Tasks */
+.phase-tasks {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.task-item {
+    background: rgba(0, 0, 0, 0.2);
+    border-left: 4px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 15px;
+}
+
+.task-header {
+    margin-bottom: 10px;
+}
+
+.task-issue {
+    color: #ffdc00;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.task-action,
+.task-impact {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 14px;
+    line-height: 1.6;
+    margin-bottom: 8px;
+}
+
+.task-action strong,
+.task-impact strong {
+    color: white;
+}
+
+/* Phase Toggle Button */
+.phase-toggle {
+    width: 100%;
+    padding: 12px 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.phase-toggle:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.phase-toggle.completed {
+    background: linear-gradient(135deg, #2ecc40 0%, #01ff70 100%);
+    border-color: transparent;
+}
+
+/* Progress */
+.plan-footer {
+    padding-top: 20px;
+    border-top: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.progress-bar {
+    width: 100%;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    border-radius: 6px;
+    transition: width 0.5s ease;
+}
+
+.progress-text {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+}
+
+/* Completion Message */
+.completion-message {
+    text-align: center;
+    margin-top: 30px;
+    padding: 30px;
+    background: linear-gradient(135deg, rgba(46, 204, 64, 0.2) 0%, rgba(1, 255, 112, 0.2) 100%);
+    border: 2px solid rgba(46, 204, 64, 0.3);
+    border-radius: 16px;
+}
+
+.completion-message h3 {
+    color: #2ecc40;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.completion-message p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 16px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .plan-meta {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .phase-title-row {
+        flex-wrap: wrap;
+    }
+
+    .phase-number {
+        width: 100%;
+        text-align: center;
+    }
+}

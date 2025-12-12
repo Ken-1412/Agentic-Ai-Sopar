@@ -1,0 +1,189 @@
+version: '3.8'
+
+services:
+  # MongoDB
+  mongodb:
+    image: mongo:latest
+    container_name: sapor-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-password}
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - sapor-network
+
+  # Elasticsearch
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    container_name: sapor-elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    networks:
+      - sapor-network
+
+  # PostgreSQL (for Kestra)
+  postgres:
+    image: postgres:15
+    container_name: sapor-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-kestra}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kestra}
+      POSTGRES_DB: ${POSTGRES_DB:-kestra}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - sapor-network
+
+  # Kestra (Workflow Orchestration)
+  kestra:
+    image: kestra/kestra:latest
+    container_name: sapor-kestra
+    ports:
+      - "8080:8080"
+    environment:
+      KESTRA_CONFIGURATION: |
+        datasources:
+          postgres:
+            url: jdbc:postgresql://postgres:5432/kestra
+            driverClassName: org.postgresql.Driver
+            username: ${POSTGRES_USER:-kestra}
+            password: ${POSTGRES_PASSWORD:-kestra}
+    depends_on:
+      - postgres
+    volumes:
+      - ./flows:/app/flows
+      - kestra-data:/app/storage
+    networks:
+      - sapor-network
+
+  # Redis (LLM Caching)
+  redis:
+    image: redis:7-alpine
+    container_name: sapor-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - sapor-network
+
+  # Ollama (Local AI - Optional)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: sapor-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    networks:
+      - sapor-network
+    # Uncomment below for GPU support
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+    # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sapor-backend
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: ${NODE_ENV:-development}
+      PORT: 3001
+      MONGODB_URI: mongodb://${MONGO_USERNAME:-admin}:${MONGO_PASSWORD:-password}@mongodb:27017/sapor?authSource=admin
+
+      # LLM Configuration
+      LLM_DEPLOYMENT_MODE: ${LLM_DEPLOYMENT_MODE:-online}
+      OLLAMA_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2}
+      HF_MODEL: ${HF_MODEL:-meta-llama/Llama-3.2-3B-Instruct}
+      HF_API_KEY: ${HF_API_KEY:-}
+
+      # Redis Configuration
+      REDIS_ENABLED: ${REDIS_ENABLED:-true}
+      REDIS_URL: redis://redis:6379
+
+      # Other services
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      KESTRA_URL: http://kestra:8080
+    depends_on:
+      - mongodb
+      - redis
+      - elasticsearch
+      - ollama
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - sapor-network
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sapor-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:3001/api
+    depends_on:
+      - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - sapor-network
+
+  # QA Service
+  qa-service:
+    build:
+      context: ./qa-service
+      dockerfile: Dockerfile
+    container_name: sapor-qa-service
+    ports:
+      - "3002:3002"
+    environment:
+      PORT: 3002
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      BACKEND_URL: http://backend:3001
+    depends_on:
+      - elasticsearch
+    volumes:
+      - ./qa-service:/app
+      - /app/node_modules
+    networks:
+      - sapor-network
+
+volumes:
+  mongodb-data:
+  elasticsearch-data:
+  postgres-data:
+  kestra-data:
+  redis-data:
+  ollama-data:
+
+
+networks:
+  sapor-network:
+    driver: bridge

@@ -1,0 +1,11 @@
+name: "QA Tester"
+role: "qa_tester"
+description: "Validates application functionality and code quality."
+tools:
+  - "run_unit_tests"
+  - "run_e2e_tests"
+  - "code_review"
+model: "gpt-4o"
+temperature: 0.1
+system_prompt: |
+  You are a QA Tester. You meticulously check code for bugs, security issues, and spec (mis)alignment.

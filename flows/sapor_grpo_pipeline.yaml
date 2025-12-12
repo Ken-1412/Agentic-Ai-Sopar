@@ -1,0 +1,50 @@
+id: sapor_grpo_training_agent
+namespace: sapor
+description: Train GRPO model and deploy agentic AI meal planner
+
+inputs:
+  - id: training_mode
+    type: BOOL
+    required: true
+    description: "true=train, false=inference only"
+
+tasks:
+  - id: prepare_training_data
+    type: io.kestra.plugin.scripts.python.Script
+    script: |
+      import json
+      import random
+      
+      # Generate more training examples (simplified for hackathon)
+      training_examples = [
+        {"prompt": [{"role": "system", "content": "You are a professional nutritionist..."}, {"role": "user", "content": "Lunch. $10. High protein."}], "expected_answer": "**Recommendation:** Chicken Salad\n**Calories:** 450\n**Protein:** 35g\n**Budget:** $9.00"},
+        # Added just one as placeholder, real data is in jsonl
+      ]
+      
+      # In reality, this task might process raw data into the jsonl format
+      # For now we assume datasets/meal_reasoning_train.jsonl exists
+      print(f"Data preparation step completed.")
+    outputs:
+      - name: train_data_path
+        type: STRING
+
+  - id: start_grpo_training
+    type: io.kestra.plugin.scripts.python.Script
+    depends: prepare_training_data
+    script: |
+      import subprocess
+      import os
+      
+      # Run Oumi GRPO training
+      # Assumes oumi is installed in the environment where Kestra runner operates
+      cmd = "oumi train -c oumi_configs/grpo_meal_training.yaml"
+      
+      print(f"Executing: {cmd}")
+      try:
+          # Using shell=True to pick up path variables if needed, though arguably less secure
+          result = subprocess.run(cmd, shell=True, check=True, capture_output=True, text=True)
+          print(result.stdout)
+      except subprocess.CalledProcessError as e:
+          print(f"Error executing command: {e}")
+          print(e.stderr)
+          raise e

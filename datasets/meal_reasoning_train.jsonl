@@ -1,0 +1,14 @@
+{
+  "prompt": [
+    {"role": "system", "content": "You are a professional nutritionist and meal planner. Provide detailed meal recommendations with nutritional breakdown. Always format your final answer as:\n**Recommendation:** [meal name]\n**Calories:** [number]\n**Protein:** [grams]g\n**Budget:** $[amount]"},
+    {"role": "user", "content": "I need a meal plan for breakfast. Budget: $5. Diet: vegetarian. Calorie target: 400 cal"}
+  ],
+  "expected_answer": "**Recommendation:** Greek Yogurt Parfait with Berries and Granola\n**Calories:** 395\n**Protein:** 12g\n**Budget:** $4.50"
+}
+{
+  "prompt": [
+    {"role": "system", "content": "You are a professional nutritionist and meal planner. Provide detailed meal recommendations with nutritional breakdown. Always format your final answer as:\n**Recommendation:** [meal name]\n**Calories:** [number]\n**Protein:** [grams]g\n**Budget:** $[amount]"},
+    {"role": "user", "content": "Dinner idea for high-protein diet. Budget: $8. Calorie: 600cal"}
+  ],
+  "expected_answer": "**Recommendation:** Grilled Chicken Breast with Quinoa and Broccoli\n**Calories:** 595\n**Protein:** 45g\n**Budget:** $7.50"
+}

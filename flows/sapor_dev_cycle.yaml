@@ -1,0 +1,53 @@
+id: sapor_dev_cycle
+namespace: sapor
+description: Orchestrate the full Agentic AI development cycle
+
+inputs:
+  - id: feature_request
+    type: STRING
+    required: true
+    defaults: "Add a new 'Vegan Surprise' meal category"
+
+tasks:
+  - id: 1_planner_agent
+    type: io.kestra.plugin.scripts.python.Script
+    script: |
+      import subprocess
+      # Simulate Planner
+      cmd = ["python", "/app/agent/run_agent.py", "--role", "/app/agent/roles/planner.yaml", "--task", "{{ inputs.feature_request }}"]
+      # In real setup, we'd capture output. For now just running it.
+      print("Planning Phase Initiated...")
+    outputs:
+      - name: plan
+        type: STRING
+
+  - id: 2_parallel_development
+    type: io.kestra.plugin.core.flow.Parallel
+    tasks:
+      - id: frontend_dev
+        type: io.kestra.plugin.scripts.python.Script
+        script: |
+          print("Frontend Dev Agent working on UI...")
+          # python /app/agent/run_agent.py --role /app/agent/roles/frontend_developer.yaml ...
+      
+      - id: backend_dev
+        type: io.kestra.plugin.scripts.python.Script
+        script: |
+          print("Backend Dev Agent working on API...")
+          # python /app/agent/run_agent.py --role /app/agent/roles/backend_developer.yaml ...
+
+  - id: 3_qa_testing
+    type: io.kestra.plugin.scripts.python.Script
+    script: |
+      print("QA Agent running tests...")
+      # python /app/agent/run_agent.py --role /app/agent/roles/qa_tester.yaml ...
+      
+  - id: 4_ml_training
+    type: io.kestra.plugin.scripts.python.Script
+    script: |
+      print("ML Specialist checking if model update needed...")
+      # python /app/agent/run_agent.py --role /app/agent/roles/ml_specialist.yaml ...
+
+triggers:
+  - id: on_pull_request
+    type: io.kestra.plugin.core.trigger.Webhook

@@ -1,0 +1,60 @@
+model:
+  model_name: "Qwen/Qwen2-0.5B-Instruct"  # Small model for hackathon, scale up later
+  trust_remote_code: true
+  dtype: "bfloat16"
+
+data:
+  train:
+    datasets:
+      - dataset_name: "sapor_meal_grpo"
+        dataset_path: "datasets/meal_reasoning_train.jsonl"
+        split: "train"
+  validation:
+    datasets:
+      - dataset_name: "sapor_meal_grpo"
+        dataset_path: "datasets/meal_reasoning_val.jsonl"
+        split: "validation"
+
+training:
+  output_dir: "output/sapor_grpo_model"
+  trainer_type: "TRL_GRPO"  # Use TRL GRPO trainer
+  
+  # GRPO-specific settings
+  reward_functions:
+    - "meal_correctness"  # Custom reward function for meal planning
+  
+  learning_rate: 1e-4
+  num_train_epochs: 3
+  max_steps: 1000
+  per_device_train_batch_size: 8
+  per_device_eval_batch_size: 8
+  
+  # Enable gradient checkpointing for memory efficiency
+  gradient_checkpointing: true
+  gradient_accumulation_steps: 2
+  
+  # Logging and checkpointing
+  logging_steps: 50
+  eval_steps: 200
+  save_steps: 200
+  save_total_limit: 3
+  
+  # GRPO configuration
+  grpo:
+    num_generations: 4  # Generate 4 responses per prompt
+    max_completion_length: 256
+    temperature: 0.7
+    use_vllm: true  # Use vLLM for faster generation
+    top_p: 0.9
+
+peft:
+  use_peft: true
+  lora_r: 32
+  lora_alpha: 64
+  lora_target_modules:
+    - "q_proj"
+    - "v_proj"
+    - "o_proj"
+    - "gate_proj"
+    - "up_proj"
+    - "down_proj"

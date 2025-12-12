@@ -1,0 +1,42 @@
+id: smoke_tests
+namespace: sapor
+description: Minimal smoke checks for SAPOR backend APIs
+
+tasks:
+  - id: health_check
+    type: io.kestra.plugin.scripts.shell.Script
+    script: |
+      set -e
+      echo "🌡️  Health check"
+      curl -fsS http://localhost:3001/api/health
+
+  - id: sample_meals
+    type: io.kestra.plugin.scripts.shell.Script
+    depends: health_check
+    script: |
+      set -e
+      echo "🥗 Meals sample"
+      curl -fsS -X POST http://localhost:3001/api/meals \
+        -H "Content-Type: application/json" \
+        -d '{"mode":"budget","budget":50,"limit":3}'
+
+  - id: sample_feedback
+    type: io.kestra.plugin.scripts.shell.Script
+    depends: sample_meals
+    script: |
+      set -e
+      echo "⭐ Feedback sample"
+      curl -fsS -X POST http://localhost:3001/api/feedback \
+        -H "Content-Type: application/json" \
+        -d '{"mealId":1,"rating":4}'
+
+triggers:
+  - id: manual
+    type: io.kestra.plugin.core.trigger.Manual
+
+
+
+
+
+
+

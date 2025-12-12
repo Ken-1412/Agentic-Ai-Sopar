@@ -1,0 +1,73 @@
+id: webhook_meal_recommendation
+namespace: sapor
+description: Real-time meal recommendation via webhook
+
+inputs:
+  - id: user_id
+    type: STRING
+    required: true
+  - id: dietary_restrictions
+    type: STRING
+  - id: budget_range
+    type: STRING
+
+tasks:
+  - id: get_user_profile
+    type: io.kestra.plugin.scripts.python.Script
+    script: |
+      from pymongo import MongoClient
+      import json
+      
+      user_id = '''{{ inputs.user_id }}'''
+      
+      client = MongoClient('mongodb+srv://your-connection-string')
+      db = client['meal_db']
+      user = db['users'].find_one({'id': user_id})
+      
+      print(json.dumps(user, default=str))
+    outputs:
+      - name: profile
+        type: STRING
+
+  - id: personalized_recommendation
+    type: io.kestra.plugin.scripts.python.Script
+    depends: get_user_profile
+    script: |
+      import json
+      import joblib
+      import numpy as np
+      
+      profile = json.loads('''{{ taskRun.outputs.profile }}''')
+      model = joblib.load('/app/models/recommendation_model.pkl')
+      
+      features = np.array([
+        float(profile.get('budget', 10)),
+        float(profile.get('cuisine_preference', 0)),
+        float(profile.get('diet_type', 0)),
+        float(profile.get('calorie_target', 2000))
+      ]).reshape(1, -1)
+      
+      recommendations = model.predict(features)[0]
+      
+      result = {
+        'user_id': profile['id'],
+        'recommended_meals': recommendations.tolist(),
+        'timestamp': '{{ now }}'
+      }
+      print(json.dumps(result))
+    outputs:
+      - name: result
+        type: STRING
+
+  - id: send_to_backend
+    type: io.kestra.plugin.core.http.Request
+    depends: personalized_recommendation
+    uri: http://localhost:3000/api/recommendations
+    method: POST
+    contentType: application/json
+    body: |
+      {{ taskRun.outputs.result }}
+
+triggers:
+  - id: webhook
+    type: io.kestra.plugin.core.trigger.Webhook
