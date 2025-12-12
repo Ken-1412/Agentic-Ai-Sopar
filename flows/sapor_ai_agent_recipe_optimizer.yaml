@@ -1,0 +1,270 @@
+id: sapor_ai_agent_recipe_optimizer
+namespace: sapor.ai
+
+description: |
+  AI Agent that analyzes recipe health trends and automatically:
+  1. Identifies unhealthy recipe patterns
+  2. Generates healthier alternatives
+  3. Updates meal database with recommendations
+  4. Makes decisions on menu optimization
+
+labels:
+  project: SAPOR
+  type: ai-agent-decisioning
+  purpose: recipe-optimization
+
+tasks:
+  # Step 1: Fetch Recent Recipes
+  - id: fetch_recent_recipes
+    type: io.kestra.plugin.mongodb.Find
+    connection:
+      uri: "{{ secret('MONGODB_URI') }}"
+    database: sapor
+    collection: meals
+    filter: |
+      {
+        "analyzed": { "$ne": true }
+      }
+    limit: 20
+    fetchType: FETCH_ALL
+
+  # Step 2: Analyze Each Recipe
+  - id: analyze_recipes
+    type: io.kestra.plugin.core.flow.ForEach
+    values: "{{ outputs.fetch_recent_recipes.rows }}"
+    tasks:
+      - id: analyze_single_recipe
+        type: io.kestra.plugin.core.http.Request
+        uri: http://backend:3001/api/recipes/analyze
+        method: POST
+        contentType: application/json
+        body: |
+          {
+            "recipe": {
+              "name": "{{ taskrun.value.name }}",
+              "calories": {{ taskrun.value.calories | default(500) }},
+              "sodium": {{ taskrun.value.sodium | default(800) }},
+              "sugar": {{ taskrun.value.sugar | default(10) }},
+              "saturatedFat": {{ taskrun.value.saturatedFat | default(8) }},
+              "transFat": {{ taskrun.value.transFat | default(0) }},
+              "carbonFootprint": {{ taskrun.value.carbon | default(2) }},
+              "cost": {{ taskrun.value.cost | default(5) }},
+              "cookTime": {{ taskrun.value.prepTime | default(25) }}
+            }
+          }
+
+  # Step 3: AI Agent - Aggregate Analysis & Make Decisions
+  - id: ai_agent_recipe_decisioning
+    type: io.kestra.plugin.openai.ChatCompletion
+    apiKey: "{{ secret('OPENAI_API_KEY') }}"
+    model: gpt-4-turbo-preview
+    temperature: 0.7
+    messages:
+      - role: system
+        content: |
+          You are SAPOR's Recipe Optimization AI Agent. Your mission:
+          
+          1. ANALYZE: Review recipe health analysis results
+          2. IDENTIFY: Find patterns in unhealthy recipes
+          3. DECIDE: Determine which recipes need urgent improvement
+          4. RECOMMEND: Suggest specific actions for each recipe
+          5. PRIORITIZE: Rank recipes by health impact
+          
+          Make data-driven decisions and provide JSON output with:
+          {
+            "overall_health_score": 0-100,
+            "critical_recipes": [list of recipe names needing immediate attention],
+            "decisions": [
+              {
+                "recipe": "name",
+                "action": "keep|improve|replace|remove",
+                "reason": "explanation",
+                "priority": "low|medium|high|critical",
+                "improvements": ["specific changes"]
+              }
+            ],
+            "menu_recommendations": {
+              "add": ["healthier alternatives to add"],
+              "modify": ["recipes to improve"],
+              "remove": ["recipes to phase out"]
+            },
+            "automated_actions": [
+              "actions the system should take automatically"
+            ]
+          }
+      
+      - role: user
+        content: |
+          Analyze these recipe health results and make optimization decisions:
+          
+          {{ outputs.analyze_recipes.outputs | tojson }}
+          
+          Consider:
+          - Health scores and severity levels
+          - Nutritional balance across the menu
+          - Cost and sustainability
+          - User preferences (if available)
+          - Feasibility of improvements
+
+  # Step 4: Parse AI Decisions
+  - id: parse_decisions
+    type: io.kestra.plugin.scripts.python.Script
+    docker:
+      image: python:3.11-slim
+    script: |
+      import json
+      import re
+      
+      ai_response = """{{ outputs.ai_agent_recipe_decisioning.choices[0].message.content }}"""
+      
+      # Extract JSON from response
+      json_match = re.search(r'\{.*\}', ai_response, re.DOTALL)
+      if json_match:
+          decisions = json.loads(json_match.group())
+      else:
+          decisions = {"error": "Could not parse AI response"}
+      
+      print(json.dumps(decisions, indent=2))
+
+  # Step 5: Execute Automated Decisions
+  - id: execute_decisions
+    type: io.kestra.plugin.core.flow.ForEach
+    values: "{{ outputs.parse_decisions.vars.decisions }}"
+    tasks:
+      - id: process_decision
+        type: io.kestra.plugin.core.flow.Switch
+        value: "{{ taskrun.value.action }}"
+        cases:
+          improve:
+            - id: generate_improvement
+              type: io.kestra.plugin.core.http.Request
+              uri: http://backend:3001/api/recipes/healthier-alternative
+              method: POST
+              body: |
+                {
+                  "recipe": {{ taskrun.value | tojson }}
+                }
+            
+            - id: store_improvement
+              type: io.kestra.plugin.mongodb.UpdateOne
+              connection:
+                uri: "{{ secret('MONGODB_URI') }}"
+              database: sapor
+              collection: meals
+              filter: |
+                { "name": "{{ taskrun.value.recipe }}" }
+              update: |
+                {
+                  "$set": {
+                    "healthierVersion": {{ outputs.generate_improvement.body | tojson }},
+                    "improvementSuggested": true,
+                    "improvementDate": "{{ now() }}",
+                    "analyzed": true
+                  }
+                }
+          
+          replace:
+            - id: mark_for_replacement
+              type: io.kestra.plugin.mongodb.UpdateOne
+              connection:
+                uri: "{{ secret('MONGODB_URI') }}"
+              database: sapor
+              collection: meals
+              filter: |
+                { "name": "{{ taskrun.value.recipe }}" }
+              update: |
+                {
+                  "$set": {
+                    "status": "pending_replacement",
+                    "replacementReason": "{{ taskrun.value.reason }}",
+                    "analyzed": true
+                  }
+                }
+          
+          remove:
+            - id: archive_recipe
+              type: io.kestra.plugin.mongodb.UpdateOne
+              connection:
+                uri: "{{ secret('MONGODB_URI') }}"
+              database: sapor
+              collection: meals
+              filter: |
+                { "name": "{{ taskrun.value.recipe }}" }
+              update: |
+                {
+                  "$set": {
+                    "archived": true,
+                    "archiveReason": "{{ taskrun.value.reason }}",
+                    "archivedDate": "{{ now() }}",
+                    "analyzed": true
+                  }
+                }
+          
+          keep:
+            - id: mark_healthy
+              type: io.kestra.plugin.mongodb.UpdateOne
+              connection:
+                uri: "{{ secret('MONGODB_URI') }}"
+              database: sapor
+              collection: meals
+              filter: |
+                { "name": "{{ taskrun.value.recipe }}" }
+              update: |
+                {
+                  "$set": {
+                    "healthCertified": true,
+                    "certificationDate": "{{ now() }}",
+                    "analyzed": true
+                  }
+                }
+
+  # Step 6: Generate Menu Optimization Report
+  - id: create_optimization_report
+    type: io.kestra.plugin.mongodb.InsertOne
+    connection:
+      uri: "{{ secret('MONGODB_URI') }}"
+    database: sapor
+    collection: optimization_reports
+    document: |
+      {
+        "timestamp": "{{ now() }}",
+        "type": "ai_agent_optimization",
+        "overall_health_score": {{ outputs.parse_decisions.vars.overall_health_score }},
+        "recipes_analyzed": {{ outputs.fetch_recent_recipes.rows | length }},
+        "decisions_made": {{ outputs.parse_decisions.vars.decisions | length }},
+        "critical_recipes": {{ outputs.parse_decisions.vars.critical_recipes | tojson }},
+        "menu_recommendations": {{ outputs.parse_decisions.vars.menu_recommendations | tojson }},
+        "automated_actions": {{ outputs.parse_decisions.vars.automated_actions | tojson }},
+        "execution_status": "completed"
+      }
+
+  # Step 7: Notification Based on Urgency
+  - id: send_notification
+    type: io.kestra.plugin.core.flow.If
+    condition: "{{ outputs.parse_decisions.vars.critical_recipes | length > 0 }}"
+    then:
+      - id: alert_critical_recipes
+        type: io.kestra.plugin.core.log.Log
+        level: WARN
+        message: |
+          🚨 CRITICAL RECIPES DETECTED:
+          {{ outputs.parse_decisions.vars.critical_recipes | join(', ') }}
+          
+          Automated actions taken:
+          {{ outputs.parse_decisions.vars.automated_actions | join('\n- ') }}
+
+triggers:
+  - id: nightly_optimization
+    type: io.kestra.plugin.core.trigger.Schedule
+    cron: "0 2 * * *"  # Every night at 2 AM
+  
+  - id: on_new_recipe
+    type: io.kestra.plugin.mongodb.Trigger
+    connection:
+      uri: "{{ secret('MONGODB_URI') }}"
+    database: sapor
+    collection: meals
+    filter: |
+      {
+        "analyzed": { "$exists": false }
+      }
