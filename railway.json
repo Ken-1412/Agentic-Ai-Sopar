@@ -1,0 +1,38 @@
+# Railway Deployment Configuration
+# This file tells Railway how to build each service
+
+services:
+  - name: backend
+    plan: starter
+    region: us-west
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      NODE_ENV: production
+      PORT: 3001
+      # Railway will auto-inject:
+      # ${
+    {MongoDB.DATABASE_URL
+    }
+}
+      # ${
+    {Redis.REDIS_URL
+    }
+}
+    healthcheck:
+      path: /api/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+  
+  - name: frontend
+    plan: starter
+    region: us-west
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    rootDirectory: /frontend
+    envVars:
+      VITE_API_URL: ${
+    {backend.url
+    }
+}/api
