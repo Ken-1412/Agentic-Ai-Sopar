@@ -5,7 +5,30 @@
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-green)](https://nodejs.org)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
+
 > **World's First** self-analyzing meal recommendation system that applies software engineering "code smell" patterns to recipes and analyzes its own codebase for continuous improvement!
+
+## 🏆 Hackathon Sponsor Tracks
+
+### ♾️ The Infinity Build Award (Cline)
+- **Usage**: Cline CLI was used extensively to architect, build, and iterate upon the entire "Self-Analyzing" Agentic system. It provided the core agentic capabilities that allow SAPOR to analyze its own code.
+- **Evidence**: The [`agent/`](agent/) directory contains the custom agent scripts (`planner_agent.py`, `meal_agent.py`) that were generated and refined using Cline. These agents demonstrate the automation tools built through the CLI.
+
+### 🔌 The Wakanda Data Award (Kestra)
+- **Usage**: Kestra's AI Agent capabilities are used to orchestrate the personalized meal recommendation data pipeline. It triggers the recommendation logic based on user data.
+- **Evidence**: [`flows/webhook-recommendation.yaml`](flows/webhook-recommendation.yaml) defines the workflow where the `personalized_recommendation` task (Python script) processes user profiles and invokes the ML model.
+
+### 🧠 The Iron Intelligence Award (Oumi)
+- **Usage**: Oumi was utilized for Reinforcement Learning (RL) fine-tuning of the meal recommendation model, specifically using the GRPO trainer.
+- **Evidence**: [`oumi_configs/grpo_meal_training.yaml`](oumi_configs/grpo_meal_training.yaml) contains the configuration for the TRL GRPO trainer, including custom reward functions like `meal_correctness`.
+
+### ⚡ The Stormbreaker Deployment Award (Vercel)
+- **Usage**: The SAPOR frontend is deployed on Vercel, ensuring high performance and global availability.
+- **Evidence**: [`vercel.json`](vercel.json) provides the deployment configuration. Validated live deployment.
+
+### 🐰 The Captain Code Award (CodeRabbit)
+- **Usage**: CodeRabbit is integrated for automated, AI-driven pull request reviews, ensuring high code quality and security standards.
+- **Evidence**: [`.coderabbit.yaml`](.coderabbit.yaml) configuration file and the active "CodeRabbit AI Reviewed" badge on the repository.
 
 ## 🌟 Unique Features
 
