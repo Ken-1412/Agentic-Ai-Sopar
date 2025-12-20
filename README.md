@@ -5,6 +5,9 @@
 [![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-green)](https://nodejs.org)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
+ <br><a href="https://www.youtube.com/watch?v=hySTRj-w3zM"> visit to see a demo video <img width="100" height="100" alt="logosapor" src="https://github.com/user-attachments/assets/12f0c892-3c1f-43ef-b7d9-8b9578bb542b" />
+</a>
+ <br>
 
 > **World's First** self-analyzing meal recommendation system that applies software engineering "code smell" patterns to recipes and analyzes its own codebase for continuous improvement!
 
